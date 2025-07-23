@@ -41,23 +41,49 @@
   */
 #include "dac8050x.h"
 
-SPI_TypeDef  spiHandle;
+extern SPI_HandleTypeDef hspi1;
 
+/*configured the Clock polarity as LOW and clock phase as 2nd edge.*/
 DAC8050x_CONFIG dac8050x_config =
 {
 		dac8050x_transmitData,
-		dac8050x_receiveData
-
+		dac8050x_receiveData,
+		enable_chipSelect,
+		disable_chipSelect
 };
+
+
+/**
+  * @brief  function to Enable the chip select
+  * @param  None
+  * @retval None
+  */
+/*change this function according to your controller function*/
+void enable_chipSelect(void)
+{
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);
+}
+
+/**
+  * @brief  function to disable the chip select
+  * @param  None
+  * @retval None
+  */
+/*change this function according to your controller function*/
+void disable_chipSelect(void)
+{
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_SET);
+}
 
 /**
   * @brief  function to transmit data using SPI
   * @param  data : data to be transmitted
   * @retval return the transmission is success or not
   */
+/*change this function according to your controller function*/
 bool dac8050x_transmitData(uint8_t * data)
 {
-	  HAL_SPI_Transmit(&spiHandle, data, 3, 1000);
+	  HAL_SPI_Transmit(&hspi1, data, 3, 1000);
 	  return true;
 
 }
@@ -67,9 +93,10 @@ bool dac8050x_transmitData(uint8_t * data)
   * @param  data : data to be transmitted
   * @retval return the transmission is success or not
   */
+/*change this function according to your controller function*/
 bool dac8050x_receiveData(uint8_t * data)
 {
-	  HAL_SPI_Receive(&spiHandle, data, 3, 1000);
+	  HAL_SPI_Receive(&hspi1, data, 3, 1000);
 	  return true;
 }
 
@@ -78,23 +105,24 @@ bool dac8050x_receiveData(uint8_t * data)
   * @param  None
   * @retval return the 16 bit data from the corresponding register
   */
+/*function will return both device ID and version ID first two bit is version ID (LSB)*/
 uint16_t readDeviceID(void)
 {
 	bool status = false;
 	uint8_t tempBufferTransmit[NUM_THREE] = {INIT_ZERO};
 	uint8_t tempBufferReceive[NUM_THREE] = {INIT_ZERO};
 	tempBufferTransmit[NUM_ZERO] = READ_REGISTER_COMMAND | REGISTER_DAC_DEVICE_ID;
+	dac8050x_config.enable_chipSelect();
 	status = dac8050x_config.spi_transferData(tempBufferTransmit);
 	if(!status)
 	{
 		return(NUM_ZERO);
 	}
 	status = dac8050x_config.spi_ReceiveData(tempBufferReceive);
+	dac8050x_config.disable_chipSelect();
 	if(!status)
 	{
 		return(NUM_ZERO);
 	}
-	return ((tempBufferReceive[NUM_TWO] << 8) | tempBufferReceive[NUM_THREE] );
-
-
+	return ((tempBufferReceive[NUM_TWO] << 8) | tempBufferReceive[NUM_THREE] ); /*device ID + version id*/
 }

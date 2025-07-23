@@ -57,6 +57,7 @@
 #define NUM_ONE                                            1
 #define NUM_TWO                                            2
 
+#define REGISTER_DAC_NOP                                   0x00 /*register to get the DAC device id*/
 #define REGISTER_DAC_DEVICE_ID                             0x01 /*register to get the DAC device id*/
 #define REGISTER_DAC_SYNC                                  0x02 /*register address to the sync register*/
 #define REGISTER_DAC_CONFIG                                0x03 /*register address for the configuration register*/
@@ -77,6 +78,9 @@
 #define READ_REGISTER_COMMAND                              0x80  /*command for reading register*/
 #define WRITE_REGISTER_COMMAND                             0x00  /*command for writing register*/
 
+#define DAC7_BROADCAST_ENABLE                              1<<15;
+#define DAC7_BROADCAST_DISABLE                             0<<15;
+
 
 
 
@@ -84,7 +88,23 @@ typedef struct
 {
 	bool (* spi_transferData) (uint8_t *data);
 	bool (* spi_ReceiveData)  (uint8_t *data);
+	void (* enable_chipSelect) (void);
+	void (* disable_chipSelect) (void);
 }DAC8050x_CONFIG;
+
+/**
+  * @brief  function to Enable the chip select
+  * @param  None
+  * @retval None
+  */
+void enable_chipSelect(void);
+
+/**
+  * @brief  function to disable the chip select
+  * @param  None
+  * @retval None
+  */
+void disable_chipSelect(void);
 
 /**
   * @brief  function to transmit data using SPI
