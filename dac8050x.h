@@ -51,11 +51,15 @@
 #include "main.h"
 #include <stdbool.h>
 
+#define CRC_CHECK_DISABLE
+
 #define NUM_THREE                                          3
 #define INIT_ZERO                                          0
 #define NUM_ZERO                                           0
 #define NUM_ONE                                            1
 #define NUM_TWO                                            2
+#define NUM_FOUR                                           4
+#define NUM_EIGHT                                          8
 
 #define REGISTER_DAC_NOP                                   0x00 /*register to get the DAC device id*/
 #define REGISTER_DAC_DEVICE_ID                             0x01 /*register to get the DAC device id*/
@@ -128,81 +132,81 @@
 #define DAC0_BROADCAST_DISABLE                             0<<8 /*bit to disable the broadcast for the DAC channel 0 */
 
 /*-------------------------------------------CONFIG REGISTER-------------------------------------------------------*/
-#define ALARM_PIN_CRC_ERROR                                0<<13
-#define ALARM_PIN_REF_ALARM                                1<<13
+#define ALARM_PIN_CRC_ERROR                                0<<13  /*set alarm pin as crc error*/
+#define ALARM_PIN_REF_ALARM                                1<<13  /*set alarm pin as ref alarm*/
 
-#define CONFIG_ALARM_ENABLE                                1<<12
-#define CONFIG_ALARM_DISABLE                               0<<12
+#define CONFIG_ALARM_ENABLE                                1<<12 /*to enable the alarm*/
+#define CONFIG_ALARM_DISABLE                               0<<12 /*to disable the alarm*/
 
-#define CONFIG_CRC_ENABLE                                  1<<11
-#define CONFIG_CRC_DISABLE                                 0<<11
+#define CONFIG_CRC_ENABLE                                  1<<11 /*enable the crc*/
+#define CONFIG_CRC_DISABLE                                 0<<11 /*disable the crc*/
 
-#define CONFIG_UPDATE_RISING_EDGE                          0<<10
-#define CONFIG_UPDATE_FALLING_EDGE                         1<<10
+#define CONFIG_UPDATE_RISING_EDGE                          0<<10 /*update data on the rising edge*/
+#define CONFIG_UPDATE_FALLING_EDGE                         1<<10 /*update data on the falling edge*/
 
-#define CONFIG_DISABLE_SERIAL_OUT                          1<<9
-#define CONFIG_ENABLE_SERIAL_OUT                           0<<9
+#define CONFIG_DISABLE_SERIAL_OUT                          1<<9  /*disable serial output*/
+#define CONFIG_ENABLE_SERIAL_OUT                           0<<9  /*enable serial output*/
 
-#define CONFIG_DISABLE_INTERNAL_REF                        1<<8
-#define CONFIG_ENABLE_INTERNAL_REF                         0<<8
+#define CONFIG_DISABLE_INTERNAL_REF                        1<<8 /*to disable the internal reference*/
+#define CONFIG_ENABLE_INTERNAL_REF                         0<<8 /*to enable internal reference*/
 
-#define CONFIG_ENABLE_MODE_POWERDOWN_DAC7                  1<<7
-#define CONFIG_DISABLE_MODE_POWERDOWN_DAC7                 0<<7
+#define CONFIG_ENABLE_MODE_POWERDOWN_DAC7                  1<<7 /*to enable power down mode for DAC channel 7*/
+#define CONFIG_DISABLE_MODE_POWERDOWN_DAC7                 0<<7 /*to disable power down mode for DAC channel 7*/
 
-#define CONFIG_ENABLE_MODE_POWERDOWN_DAC6                  1<<6
-#define CONFIG_DISABLE_MODE_POWERDOWN_DAC6                 0<<6
+#define CONFIG_ENABLE_MODE_POWERDOWN_DAC6                  1<<6 /*to enable power down mode for DAC channel 6*/
+#define CONFIG_DISABLE_MODE_POWERDOWN_DAC6                 0<<6 /*to disable power down mode for DAC channel 6*/
 
-#define CONFIG_ENABLE_MODE_POWERDOWN_DAC5                  1<<5
-#define CONFIG_DISABLE_MODE_POWERDOWN_DAC5                 0<<5
+#define CONFIG_ENABLE_MODE_POWERDOWN_DAC5                  1<<5 /*to enable power down mode for DAC channel 5*/
+#define CONFIG_DISABLE_MODE_POWERDOWN_DAC5                 0<<5 /*to disable power down mode for DAC channel 5*/
 
-#define CONFIG_ENABLE_MODE_POWERDOWN_DAC4                  1<<4
-#define CONFIG_DISABLE_MODE_POWERDOWN_DAC4                 0<<4
+#define CONFIG_ENABLE_MODE_POWERDOWN_DAC4                  1<<4 /*to enable power down mode for DAC channel 4*/
+#define CONFIG_DISABLE_MODE_POWERDOWN_DAC4                 0<<4 /*to disable power down mode for DAC channel 4*/
 
-#define CONFIG_ENABLE_MODE_POWERDOWN_DAC3                  1<<3
-#define CONFIG_DISABLE_MODE_POWERDOWN_DAC3                 0<<3
+#define CONFIG_ENABLE_MODE_POWERDOWN_DAC3                  1<<3 /*to enable power down mode for DAC channel 3*/
+#define CONFIG_DISABLE_MODE_POWERDOWN_DAC3                 0<<3 /*to disable power down mode for DAC channel 3*/
 
-#define CONFIG_ENABLE_MODE_POWERDOWN_DAC2                  1<<2
-#define CONFIG_DISABLE_MODE_POWERDOWN_DAC2                 0<<2
+#define CONFIG_ENABLE_MODE_POWERDOWN_DAC2                  1<<2 /*to enable power down mode for DAC channel 2*/
+#define CONFIG_DISABLE_MODE_POWERDOWN_DAC2                 0<<2 /*to disable power down mode for DAC channel 2*/
 
-#define CONFIG_ENABLE_MODE_POWERDOWN_DAC1                  1<<1
-#define CONFIG_DISABLE_MODE_POWERDOWN_DAC1                 0<<1
+#define CONFIG_ENABLE_MODE_POWERDOWN_DAC1                  1<<1 /*to enable power down mode for DAC channel 1*/
+#define CONFIG_DISABLE_MODE_POWERDOWN_DAC1                 0<<1 /*to disable power down mode for DAC channel 1*/
 
-#define CONFIG_ENABLE_MODE_POWERDOWN_DAC0                  1<<0
-#define CONFIG_DISABLE_MODE_POWERDOWN_DAC0                 0<<0
+#define CONFIG_ENABLE_MODE_POWERDOWN_DAC0                  1<<0 /*to enable power down mode for DAC channel 0*/
+#define CONFIG_DISABLE_MODE_POWERDOWN_DAC0                 0<<0 /*to disable power down mode for DAC channel 0*/
 
 /*---------------------------------------------GAIN REGISTER-------------------------------------------------*/
-#define GAIN_REG_DIV_INT_REF_0                             0<<8
-#define GAIN_REG_DIV_INT_REF_2                             1<<8
+#define GAIN_REG_DIV_INT_REF_0                             0<<8 /*no division for internal reference*/
+#define GAIN_REG_DIV_INT_REF_2                             1<<8 /*division of internal refernce with a factor of 2*/
 
-#define GAIN_DAC_CHANNEL_7_VALUE_2                         1<<7
-#define GAIN_DAC_CHANNEL_7_VALUE_1                         0<<7
+#define GAIN_DAC_CHANNEL_7_VALUE_2                         1<<7 /*DAC channel 7 gain value as 2*/
+#define GAIN_DAC_CHANNEL_7_VALUE_1                         0<<7 /*DAC channel 7 gain value as 1*/
 
-#define GAIN_DAC_CHANNEL_6_VALUE_2                         1<<6
-#define GAIN_DAC_CHANNEL_6_VALUE_1                         0<<6
+#define GAIN_DAC_CHANNEL_6_VALUE_2                         1<<6 /*DAC channel 6 gain value as 2*/
+#define GAIN_DAC_CHANNEL_6_VALUE_1                         0<<6 /*DAC channel 6 gain value as 1*/
 
-#define GAIN_DAC_CHANNEL_5_VALUE_2                         1<<5
-#define GAIN_DAC_CHANNEL_5_VALUE_1                         0<<5
+#define GAIN_DAC_CHANNEL_5_VALUE_2                         1<<5 /*DAC channel 5 gain value as 2*/
+#define GAIN_DAC_CHANNEL_5_VALUE_1                         0<<5 /*DAC channel 5 gain value as 1*/
 
-#define GAIN_DAC_CHANNEL_4_VALUE_2                         1<<4
-#define GAIN_DAC_CHANNEL_4_VALUE_1                         0<<4
+#define GAIN_DAC_CHANNEL_4_VALUE_2                         1<<4 /*DAC channel 4 gain value as 2*/
+#define GAIN_DAC_CHANNEL_4_VALUE_1                         0<<4 /*DAC channel 4 gain value as 1*/
 
-#define GAIN_DAC_CHANNEL_3_VALUE_2                         1<<3
-#define GAIN_DAC_CHANNEL_3_VALUE_1                         0<<3
+#define GAIN_DAC_CHANNEL_3_VALUE_2                         1<<3 /*DAC channel 3 gain value as 2*/
+#define GAIN_DAC_CHANNEL_3_VALUE_1                         0<<3 /*DAC channel 3 gain value as 1*/
 
-#define GAIN_DAC_CHANNEL_2_VALUE_2                         1<<2
-#define GAIN_DAC_CHANNEL_2_VALUE_1                         0<<2
+#define GAIN_DAC_CHANNEL_2_VALUE_2                         1<<2 /*DAC channel 2 gain value as 2*/
+#define GAIN_DAC_CHANNEL_2_VALUE_1                         0<<2 /*DAC channel 2 gain value as 1*/
 
-#define GAIN_DAC_CHANNEL_1_VALUE_2                         1<<1
-#define GAIN_DAC_CHANNEL_1_VALUE_1                         0<<1
+#define GAIN_DAC_CHANNEL_1_VALUE_2                         1<<1 /*DAC channel 1 gain value as 2*/
+#define GAIN_DAC_CHANNEL_1_VALUE_1                         0<<1 /*DAC channel 1 gain value as 1*/
 
-#define GAIN_DAC_CHANNEL_0_VALUE_2                         1<<0
-#define GAIN_DAC_CHANNEL_0_VALUE_1                         0<<0
+#define GAIN_DAC_CHANNEL_0_VALUE_2                         1<<0 /*DAC channel 0 gain value as 2*/
+#define GAIN_DAC_CHANNEL_0_VALUE_1                         0<<0 /*DAC channel 0 gain value as 1*/
 
 /*------------------------------------------TRIGGER REGISTER-------------------------------------------------*/
-#define TRIGGER_LOAD_SYNCHRONOUS_VALUE_ON                  1<<4
-#define TRIGGER_LOAD_SYNCHRONOUS_VALUE_OFF                 0<<4
-#define SOFT_RESET_DAC_ON                                  0x0A
-#define SOFT_RESET_DAC_OFF                                 0x00
+#define TRIGGER_LOAD_SYNCHRONOUS_VALUE_ON                  1<<4 /*enable trigger for the synchronous mode*/
+#define TRIGGER_LOAD_SYNCHRONOUS_VALUE_OFF                 0<<4 /*disable trigger for the  asynchronous mode*/
+#define SOFT_RESET_DAC_ON                                  0x0A /*do a soft reset*/
+#define SOFT_RESET_DAC_OFF                                 0x00 /*turn off soft reset*/
 
 
 /*------------------------------------------DAC CONFIGURATIONS---------------------------------------------------------*/
@@ -212,11 +216,21 @@
                      |DAC7_SYNC_DISABLE | DAC6_SYNC_DISABLE | DAC5_SYNC_DISABLE | DAC4_SYNC_DISABLE| DAC3_SYNC_DISABLE \
 					 | DAC2_SYNC_DISABLE |DAC1_SYNC_DISABLE | DAC0_SYNC_DISABLE)
 
+
+#ifdef CRC_CHECK_DISABLE
 #define CONFIG_CONFIG_REGISTER_VALUE \
-	                (ALARM_PIN_REF_ALARM | CONFIG_ALARM_DISABLE | CONFIG_UPDATE_RISING_EDGE |CONFIG_ENABLE_SERIAL_OUT \
+	                (ALARM_PIN_REF_ALARM | CONFIG_ALARM_DISABLE | CONFIG_CRC_DISABLE | CONFIG_UPDATE_RISING_EDGE |CONFIG_ENABLE_SERIAL_OUT \
 	                 |CONFIG_ENABLE_INTERNAL_REF	|CONFIG_DISABLE_MODE_POWERDOWN_DAC7 | CONFIG_DISABLE_MODE_POWERDOWN_DAC6\
 					  |CONFIG_DISABLE_MODE_POWERDOWN_DAC5 | CONFIG_DISABLE_MODE_POWERDOWN_DAC4 | CONFIG_DISABLE_MODE_POWERDOWN_DAC3\
 					  |CONFIG_DISABLE_MODE_POWERDOWN_DAC2 | CONFIG_DISABLE_MODE_POWERDOWN_DAC1 | CONFIG_DISABLE_MODE_POWERDOWN_DAC0)
+#endif
+#ifndef CRC_CHECK_DISABLE
+#define CONFIG_CONFIG_REGISTER_VALUE \
+	                (ALARM_PIN_REF_ALARM | CONFIG_ALARM_DISABLE |CONFIG_CRC_ENABLE | CONFIG_UPDATE_RISING_EDGE |CONFIG_ENABLE_SERIAL_OUT \
+	                 |CONFIG_ENABLE_INTERNAL_REF	|CONFIG_DISABLE_MODE_POWERDOWN_DAC7 | CONFIG_DISABLE_MODE_POWERDOWN_DAC6\
+					  |CONFIG_DISABLE_MODE_POWERDOWN_DAC5 | CONFIG_DISABLE_MODE_POWERDOWN_DAC4 | CONFIG_DISABLE_MODE_POWERDOWN_DAC3\
+					  |CONFIG_DISABLE_MODE_POWERDOWN_DAC2 | CONFIG_DISABLE_MODE_POWERDOWN_DAC1 | CONFIG_DISABLE_MODE_POWERDOWN_DAC0)
+#endif
 
 #define CONFIG_GAIN_REGISTER_VALUE \
 	                (GAIN_REG_DIV_INT_REF_0 | GAIN_DAC_CHANNEL_7_VALUE_2 | GAIN_DAC_CHANNEL_6_VALUE_2 | GAIN_DAC_CHANNEL_5_VALUE_2\
@@ -230,8 +244,8 @@
 /*STRUCTURE FOR THE SPI CONFIG FOR THE DAC*/
 typedef struct
 {
-	bool (* spi_transferData) (uint8_t *data);
-	bool (* spi_ReceiveData)  (uint8_t *data);
+	bool (* spi_transferData) (uint8_t *data , uint8_t size);
+	bool (* spi_ReceiveData)  (uint8_t *data , uint8_t size);
 	void (* enable_chipSelect) (void);
 	void (* disable_chipSelect) (void);
 }DAC8050x_CONFIG;
@@ -255,14 +269,14 @@ void disable_chipSelect(void);
   * @param  data : data to be transmitted
   * @retval return the transmission is success or not
   */
-bool dac8050x_transmitData(uint8_t * data);
+bool dac8050x_transmitData(uint8_t * data, uint8_t size);
 
 /**
   * @brief  function to receive data using SPI
   * @param  data : data to be transmitted
   * @retval return the transmission is success or not
   */
-bool dac8050x_receiveData(uint8_t * data);
+bool dac8050x_receiveData(uint8_t * data, uint8_t size);
 
 /**
   * @brief  function to write to the config register
@@ -349,6 +363,14 @@ uint16_t dac8050x_readRegister(uint8_t * data);
   */
 /*the input parameter should contain the write command + address of the register + the data need to be written to the register*/
 bool dac8050x_writeRegister(uint8_t * data);
+
+/**
+  * @brief  function to get the CRC value
+  * @param  data : data to calculate the CRC
+  * @param  len  : length of the data
+  * @retval return the 8 bit CRC value
+  */
+uint8_t crc8_atm(uint8_t *data, size_t len);
 
 
 

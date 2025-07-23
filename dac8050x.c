@@ -39,11 +39,18 @@
   *
   ******************************************************************************
   */
+
+/*Brief details about the communication
+ *configured the Clock polarity as LOW and clock phase as 2nd edge.
+ * every read and write should be 24bit and the MSB will be transmitted first (23 -> 0)
+ * so 23rd bit will be transmitted first and 0th bit will be sent last
+ */
+
+/*Testing is pending for the library*/
 #include "dac8050x.h"
 
 extern SPI_HandleTypeDef hspi1;
 
-/*configured the Clock polarity as LOW and clock phase as 2nd edge.*/
 DAC8050x_CONFIG dac8050x_config =
 {
 		dac8050x_transmitData,
@@ -81,10 +88,10 @@ void disable_chipSelect(void)
   * @retval return the transmission is success or not
   */
 #warning change this function according to your controller function
-bool dac8050x_transmitData(uint8_t * data)
+bool dac8050x_transmitData(uint8_t * data , uint8_t size)
 {
 	HAL_StatusTypeDef status = HAL_OK;
-	HAL_SPI_Transmit(&hspi1, data, NUM_THREE, 1000);
+	HAL_SPI_Transmit(&hspi1, data, size, 1000);
 	if(status == HAL_OK) return (true);
 	else return (false);
 
@@ -96,10 +103,10 @@ bool dac8050x_transmitData(uint8_t * data)
   * @retval return the transmission is success or not
   */
 #warning change this function according to your controller function
-bool dac8050x_receiveData(uint8_t * data)
+bool dac8050x_receiveData(uint8_t * data , uint8_t size)
 {
 	HAL_StatusTypeDef status = HAL_OK;
-	status = HAL_SPI_Receive(&hspi1, data, NUM_THREE, 1000);
+	status = HAL_SPI_Receive(&hspi1, data, size, 1000);
 	if(status == HAL_OK) return (true);
 	else return (false);
 
@@ -113,7 +120,7 @@ bool dac8050x_receiveData(uint8_t * data)
   */
 bool writeSyncRegister(void)
 {
-	uint8_t tempBufferTransmit[NUM_THREE] = {INIT_ZERO};
+	uint8_t tempBufferTransmit[NUM_FOUR] = {INIT_ZERO};
 	tempBufferTransmit[NUM_ZERO] = WRITE_REGISTER_COMMAND | REGISTER_DAC_SYNC;
 	tempBufferTransmit[NUM_ONE] =  ((uint16_t)CONFIG_SYNC_REGISTER_VALUE >> 8);
 	tempBufferTransmit[NUM_TWO] =  ((uint8_t)CONFIG_SYNC_REGISTER_VALUE);
@@ -127,7 +134,7 @@ bool writeSyncRegister(void)
   */
 bool writeConfigRegister(void)
 {
-	uint8_t tempBufferTransmit[NUM_THREE] = {INIT_ZERO};
+	uint8_t tempBufferTransmit[NUM_FOUR] = {INIT_ZERO};
 	tempBufferTransmit[NUM_ZERO] = WRITE_REGISTER_COMMAND | REGISTER_DAC_CONFIG;
 	tempBufferTransmit[NUM_ONE] =  ((uint16_t)CONFIG_CONFIG_REGISTER_VALUE >> 8);
 	tempBufferTransmit[NUM_TWO] =  ((uint8_t)CONFIG_CONFIG_REGISTER_VALUE);
@@ -141,7 +148,7 @@ bool writeConfigRegister(void)
   */
 bool writeGainRegister(void)
 {
-	uint8_t tempBufferTransmit[NUM_THREE] = {INIT_ZERO};
+	uint8_t tempBufferTransmit[NUM_FOUR] = {INIT_ZERO};
 	tempBufferTransmit[NUM_ZERO] = WRITE_REGISTER_COMMAND | REGISTER_DAC_GAIN;
 	tempBufferTransmit[NUM_ONE] =  ((uint16_t)CONFIG_GAIN_REGISTER_VALUE >> 8);
 	tempBufferTransmit[NUM_TWO] =  ((uint8_t)CONFIG_GAIN_REGISTER_VALUE);
@@ -155,7 +162,7 @@ bool writeGainRegister(void)
   */
 bool writeTriggerRegister(void)
 {
-	uint8_t tempBufferTransmit[NUM_THREE] = {INIT_ZERO};
+	uint8_t tempBufferTransmit[NUM_FOUR] = {INIT_ZERO};
 	tempBufferTransmit[NUM_ZERO] = WRITE_REGISTER_COMMAND | REGISTER_DAC_TRIGGGER;
 	tempBufferTransmit[NUM_ONE] =  ((uint16_t)CONFIG_TRIGGER_REGISTER_VALUE >> 8);
 	tempBufferTransmit[NUM_TWO] =  ((uint8_t)CONFIG_TRIGGER_REGISTER_VALUE);
@@ -170,7 +177,7 @@ bool writeTriggerRegister(void)
 /*function will return both device ID and version ID first two bit is version ID (LSB)*/
 uint16_t dac8050x_readDeviceID(void)
 {
-	uint8_t tempBufferTransmit[NUM_THREE] = {INIT_ZERO};
+	uint8_t tempBufferTransmit[NUM_FOUR] = {INIT_ZERO};
 	tempBufferTransmit[NUM_ZERO] = READ_REGISTER_COMMAND | REGISTER_DAC_DEVICE_ID;
 	return (dac8050x_readRegister(tempBufferTransmit));
 }
@@ -182,7 +189,7 @@ uint16_t dac8050x_readDeviceID(void)
   */
 uint16_t dac8050x_readSyncRegister(void)
 {
-	uint8_t tempBufferTransmit[NUM_THREE] = {INIT_ZERO};
+	uint8_t tempBufferTransmit[NUM_FOUR] = {INIT_ZERO};
 	tempBufferTransmit[NUM_ZERO] = READ_REGISTER_COMMAND | REGISTER_DAC_SYNC;
 	return (dac8050x_readRegister(tempBufferTransmit));
 }
@@ -194,7 +201,7 @@ uint16_t dac8050x_readSyncRegister(void)
   */
 uint16_t dac8050x_readConfigRegister(void)
 {
-	uint8_t tempBufferTransmit[NUM_THREE] = {INIT_ZERO};
+	uint8_t tempBufferTransmit[NUM_FOUR] = {INIT_ZERO};
 	tempBufferTransmit[NUM_ZERO] = READ_REGISTER_COMMAND | REGISTER_DAC_CONFIG;
 	return (dac8050x_readRegister(tempBufferTransmit));
 }
@@ -206,7 +213,7 @@ uint16_t dac8050x_readConfigRegister(void)
   */
 uint16_t dac8050x_readGainRegister(void)
 {
-	uint8_t tempBufferTransmit[NUM_THREE] = {INIT_ZERO};
+	uint8_t tempBufferTransmit[NUM_FOUR] = {INIT_ZERO};
 	tempBufferTransmit[NUM_ZERO] = READ_REGISTER_COMMAND | REGISTER_DAC_GAIN;
 	return (dac8050x_readRegister(tempBufferTransmit));
 }
@@ -218,7 +225,7 @@ uint16_t dac8050x_readGainRegister(void)
   */
 uint16_t dac8050x_readBroadcastRegister(void)
 {
-	uint8_t tempBufferTransmit[NUM_THREE] = {INIT_ZERO};
+	uint8_t tempBufferTransmit[NUM_FOUR] = {INIT_ZERO};
 	tempBufferTransmit[NUM_ZERO] = READ_REGISTER_COMMAND | REGISTER_DAC_BROADCAST;
 	return (dac8050x_readRegister(tempBufferTransmit));
 }
@@ -230,7 +237,7 @@ uint16_t dac8050x_readBroadcastRegister(void)
   */
 uint16_t dac8050x_readStatusRegister(void)
 {
-	uint8_t tempBufferTransmit[NUM_THREE] = {INIT_ZERO};
+	uint8_t tempBufferTransmit[NUM_FOUR] = {INIT_ZERO};
 	tempBufferTransmit[NUM_ZERO] = READ_REGISTER_COMMAND | REGISTER_DAC_STATUS;
 	return (dac8050x_readRegister(tempBufferTransmit));
 }
@@ -242,9 +249,23 @@ uint16_t dac8050x_readStatusRegister(void)
   */
 uint16_t dac8050x_readDacRegValue(uint8_t channelNo)
 {
-	uint8_t tempBufferTransmit[NUM_THREE] = {INIT_ZERO};
+	uint8_t tempBufferTransmit[NUM_FOUR] = {INIT_ZERO};
 	tempBufferTransmit[NUM_ZERO] = READ_REGISTER_COMMAND | (REGISTER_DAC_CHANNEL_0 + channelNo);
 	return (dac8050x_readRegister(tempBufferTransmit));
+}
+
+/**
+  * @brief  function to read DAC channel value
+  * @param  channelNo : DAC channel number to get the value
+  * @retval return the 16 bit register value
+  */
+bool dac8050x_writeDacReg(uint8_t channelNo , uint16_t value)
+{
+	uint8_t tempBufferTransmit[NUM_FOUR] = {INIT_ZERO};
+	tempBufferTransmit[NUM_ZERO] = WRITE_REGISTER_COMMAND | (REGISTER_DAC_CHANNEL_0 + channelNo);
+	tempBufferTransmit[NUM_ONE] =  ((uint16_t)value >> 8);
+	tempBufferTransmit[NUM_TWO] =  ((uint8_t)value);
+	return (dac8050x_writeRegister(tempBufferTransmit));
 }
 
 /**
@@ -256,18 +277,32 @@ uint16_t dac8050x_readDacRegValue(uint8_t channelNo)
 uint16_t dac8050x_readRegister(uint8_t * data)
 {
 	bool status = false;
-	uint8_t tempBufferReceive[NUM_THREE] = {INIT_ZERO};
+	uint8_t tempBufferReceive[NUM_FOUR] = {INIT_ZERO};
 	dac8050x_config.enable_chipSelect();
 	HAL_Delay(1);
-	status = dac8050x_config.spi_transferData(data);
-	if(!status)
+#ifndef CRC_CHECK_DISABLE
+	data[NUM_THREE] = crc8_atm(data, NUM_THREE);
+	status = dac8050x_config.spi_transferData(data , NUM_FOUR);
+#else
+	status = dac8050x_config.spi_transferData(data , NUM_THREE);
+#endif
+	if(status)
 	{
 		return(NUM_ZERO);
 	}
-	status = dac8050x_config.spi_ReceiveData(tempBufferReceive);
+#ifndef CRC_CHECK_DISABLE
+	status = dac8050x_config.spi_ReceiveData(data , NUM_FOUR);
+	if(data[NUM_THREE] != crc8_atm(data, NUM_THREE))
+	{
+		return(NUM_ZERO);
+	}
+#else
+	status = dac8050x_config.spi_ReceiveData(data , NUM_THREE);
+#endif
 	HAL_Delay(1);
+
 	dac8050x_config.disable_chipSelect();
-	if(!status)
+	if(status)
 	{
 		return(NUM_ZERO);
 	}
@@ -285,12 +320,38 @@ bool dac8050x_writeRegister(uint8_t * data)
 	bool status = false;
 	dac8050x_config.enable_chipSelect();
 	HAL_Delay(1);
-	status = dac8050x_config.spi_transferData(data);
+#ifndef CRC_CHECK_DISABLE
+	data[NUM_THREE] = crc8_atm(data, NUM_THREE);
+	status = dac8050x_config.spi_transferData(data , NUM_FOUR);
+#else
+	status = dac8050x_config.spi_transferData(data , NUM_THREE);
+#endif
 	HAL_Delay(1);
 	dac8050x_config.disable_chipSelect();
-	if(!status)
+	if(status)
 	{
 		return(NUM_ZERO);
 	}
 	return true;
+}
+
+/**
+  * @brief  function to get the CRC value
+  * @param  data : data to calculate the CRC
+  * @param  len  : length of the data
+  * @retval return the 8 bit CRC value
+  */
+uint8_t crc8_atm(uint8_t *data, size_t len)
+{
+    uint8_t crc = 0x00;
+    for (size_t i = 0; i < len; i++) {
+        crc ^= data[i];
+        for (uint8_t j = 0; j < 8; j++) {
+            if (crc & 0x80)
+                crc = (crc << 1) ^ 0x07;
+            else
+                crc <<= 1;
+        }
+    }
+    return crc;
 }
