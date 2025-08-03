@@ -18,7 +18,9 @@ This driver is written to be **platform-agnostic**, with minimal dependencies, s
 
 ## 📁 File Structure
 ├── dac8050x.c # Driver implementation
+
 ├── dac8050x.h # Driver header
+
 └── README.md # This file
 ---
 
