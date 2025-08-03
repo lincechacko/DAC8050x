@@ -66,8 +66,10 @@ void disable_chipSelect(void)
 #warning change this function according to your controller function
 bool dac8050x_transmitData(uint8_t * data, uint8_t size)
 {
-    HAL_StatusTypeDef status = HAL_SPI_Transmit(&hspi1, data, size, 1000);
-    return (status == HAL_OK);
+   	HAL_StatusTypeDef status = HAL_OK;
+   	HAL_SPI_Transmit(&hspi1, data, size, 1000);
+   	if(status == HAL_OK) return (true);
+   	else return (false);
 }
 
 /**
@@ -76,8 +78,10 @@ bool dac8050x_transmitData(uint8_t * data, uint8_t size)
 #warning change this function according to your controller function
 bool dac8050x_receiveData(uint8_t * data, uint8_t size)
 {
-    HAL_StatusTypeDef status = HAL_SPI_Receive(&hspi1, data, size, 1000);
-    return (status == HAL_OK);
+   	HAL_StatusTypeDef status = HAL_OK;
+   	status = HAL_SPI_Receive(&hspi1, data, size, 1000);
+   	if(status == HAL_OK) return (true);
+   	else return (false);
 }
 
 
